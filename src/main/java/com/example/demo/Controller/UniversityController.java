@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class UniversityController {
     private RestTemplate restTemplate;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private static final String original_url = "http://universities.hipolabs.com/search";
+    private static final String uk_url = "http://universities.hipolabs.com/search?country=United+Kingdom";
 
     /**
      * GET to fetch all universities.
@@ -32,6 +34,20 @@ public class UniversityController {
         return CompletableFuture.supplyAsync(() -> {
             ResponseEntity<University[]> responseEntity = restTemplate.exchange(
                     original_url, HttpMethod.GET, null, University[].class);
+            University[] universities = responseEntity.getBody();
+            return universities != null ? filterUniversities(universities) : new ArrayList<>();
+        });
+    }
+
+    /**
+     * POST to fetch universities by countries.
+     * @return CompletableFuture containing a list of filtered universities in UK
+     */
+    @PostMapping
+    public CompletableFuture<List<University>> getUniversitiesInUK() {
+        return CompletableFuture.supplyAsync(() -> {
+            ResponseEntity<University[]> responseEntity = restTemplate.exchange(
+                    uk_url, HttpMethod.GET, null,University[].class);
             University[] universities = responseEntity.getBody();
             return universities != null ? filterUniversities(universities) : new ArrayList<>();
         });
