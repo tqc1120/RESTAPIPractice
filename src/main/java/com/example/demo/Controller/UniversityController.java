@@ -23,7 +23,7 @@ public class UniversityController {
     private RestTemplate restTemplate;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private static final String original_url = "http://universities.hipolabs.com/search";
-    private static final String uk_url = "http://universities.hipolabs.com/search?country=United+Kingdom";
+//    private static final String uk_url = "http://universities.hipolabs.com/search?country=United+Kingdom";
 
     /**
      * GET to fetch all universities.
@@ -32,25 +32,44 @@ public class UniversityController {
     @GetMapping
     public CompletableFuture<List<University>> getAllUniversities() {
         return CompletableFuture.supplyAsync(() -> {
-            ResponseEntity<University[]> responseEntity = restTemplate.exchange(
-                    original_url, HttpMethod.GET, null, University[].class);
-            University[] universities = responseEntity.getBody();
-            return universities != null ? filterUniversities(universities) : new ArrayList<>();
+            try {
+                ResponseEntity<University[]> responseEntity = restTemplate.exchange(
+                        original_url, HttpMethod.GET, null, University[].class);
+                University[] universities = responseEntity.getBody();
+                return universities != null ? filterUniversities(universities) : new ArrayList<>();
+            } catch (RestClientException e) {
+                e.printStackTrace();
+            }
+            return new ArrayList<>();
         });
     }
 
     /**
      * POST to fetch universities by countries.
-     * @return CompletableFuture containing a list of filtered universities in UK
+     * @param countries List of country's name
+     * @return CompletableFuture containing a list of filtered universities in input countries
      */
     @PostMapping
-    public CompletableFuture<List<University>> getUniversitiesInUK() {
-        return CompletableFuture.supplyAsync(() -> {
-            ResponseEntity<University[]> responseEntity = restTemplate.exchange(
-                    uk_url, HttpMethod.GET, null,University[].class);
-            University[] universities = responseEntity.getBody();
-            return universities != null ? filterUniversities(universities) : new ArrayList<>();
-        });
+    public CompletableFuture<List<University>> getUniversitiesWithCountriesName(@RequestBody List<String> countries) {
+        List<CompletableFuture<List<University>>> completableFutures = countries.parallelStream().
+                <CompletableFuture<List<University>>>map(country -> CompletableFuture.supplyAsync(() -> {
+                    String cur_url = original_url + "?country={country}";
+                    try {
+                        ResponseEntity<University[]> responseEntity = restTemplate.exchange(
+                                cur_url, HttpMethod.GET, null, University[].class, country);
+                        University[] universities = responseEntity.getBody();
+                        return universities != null ? filterUniversities(universities) : new ArrayList<>();
+                    } catch (RestClientException e) {
+                        e.printStackTrace();
+                    }
+                    return new ArrayList<>();
+                }, executor)).collect(Collectors.toList());
+
+        CompletableFuture<Void> res = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
+        return res.thenApply(v -> completableFutures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toList()));
     }
 
     /**
