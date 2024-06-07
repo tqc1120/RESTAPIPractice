@@ -7,6 +7,15 @@ public class University {
     private String domain;
     private List<String> web_pages;
 
+    public University() {
+    }
+
+    public University(String name, String domain, List<String> web_pages) {
+        this.name = name;
+        this.domain = domain;
+        this.web_pages = web_pages;
+    }
+
     public String getName() {
         return name;
     }
