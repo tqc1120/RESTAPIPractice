@@ -1,6 +1,4 @@
-package com.example.demo.Controller;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+package com.example.demo.controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -1,6 +1,6 @@
-package com.example.demo.Service;
+package com.example.demo.service.impl;
 
-import com.example.demo.Entity.University;
+import com.example.demo.domain.University;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
