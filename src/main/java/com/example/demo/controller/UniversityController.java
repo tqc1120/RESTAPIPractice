@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.service.UniversityService;
-import com.example.demo.service.impl.UniversityServiceImpl1;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
@@ -28,6 +27,6 @@ public class UniversityController {
 
     @GetMapping(params = "countries")
     public ResponseEntity<?> getUniversitiesWithCountriesName(@RequestParam("countries") List<String> countries) {
-        return new ResponseEntity<>(getUniversitiesWithCountriesName(countries), HttpStatus.OK);
+        return new ResponseEntity<>(universityService.getUniversitiesWithCountriesName(countries), HttpStatus.OK);
     }
 }

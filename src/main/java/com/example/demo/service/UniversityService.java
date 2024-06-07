@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.UniversityProject;
 import com.example.demo.domain.University;
 import org.springframework.stereotype.Service;
 
